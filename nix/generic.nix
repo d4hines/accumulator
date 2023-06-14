@@ -43,9 +43,11 @@ with ocamlPackages; rec {
     ];
 
     propagatedBuildInputs = [
+      digestif 
       piaf
       lwt
       yojson
+      ppx_deriving 
 
       ppx_expect
     ];
