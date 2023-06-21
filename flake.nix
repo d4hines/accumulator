@@ -5,6 +5,8 @@
     nixpkgs.url = "github:nix-ocaml/nix-overlays";
     nixpkgs.inputs.flake-utils.follows = "flake-utils";
     nixpkgs.inputs.nix-filter.follows = "nix-filter";
+    ligo-nix.url = "github:ulrikstrid/ligo-nix";
+    ligo-nixpkgs.follows = "ligo-nix/nixpkgs";
   };
 
   outputs = {
@@ -12,13 +14,20 @@
     nixpkgs,
     flake-utils,
     nix-filter,
+    ligo-nix,
+    ligo-nixpkgs, 
   }: let
     out = system: let
       pkgs = import nixpkgs {
         inherit system;
         overlays = [
-          # add overlays here
+          # overlays go here
         ];
+      };
+      # Did this hack because Ligo wasn't building otherwise
+      pkgs' = import ligo-nixpkgs { 
+        inherit system;
+        overlays = [ ligo-nix.overlays.default];
       };
       inherit (pkgs) lib;
       myPkgs =
@@ -41,6 +50,7 @@
           ocaml
           dune_3
           nixfmt
+          pkgs'.ligo 
         ];
       };
 
