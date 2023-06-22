@@ -1,3 +1,1 @@
-open My_lib
-
-let () = print_endline Lib.message
+let () = print_endline "hello world"

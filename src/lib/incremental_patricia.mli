@@ -1,13 +1,13 @@
 module Make : functor
   (V : sig
-     type t
+     type t [@@deriving show]
 
      val hash : t -> BLAKE2b.t
    end)
   -> sig
   type value = V.t
   type key = int
-  type t
+  type t [@@deriving show]
 
   val empty : t
   val hash : t -> BLAKE2b.t

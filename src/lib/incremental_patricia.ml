@@ -1,18 +1,20 @@
 module Make (V : sig
   type t
 
+  val pp : Format.formatter -> t -> unit
   val hash : t -> BLAKE2b.t
 end) =
 struct
-  type value = V.t
-  type key = int
+  type value = V.t [@@deriving show]
+  type key = int [@@deriving show]
 
   type tree =
     | Empty
     | Leaf of { value : value; hash : BLAKE2b.t }
     | Node of { left : tree; hash : BLAKE2b.t; right : tree }
+  [@@deriving show]
 
-  type t = { tree : tree; top_bit : key; last_key : key }
+  type t = { tree : tree; top_bit : key; last_key : key } [@@deriving show]
 
   let is_set bit number = (1 lsl bit) land number <> 0
   let empty_hash = BLAKE2b.hash ""
@@ -56,6 +58,7 @@ struct
     let key = t.last_key + 1 in
     let value = f key in
     let increase_top_bit = key lsr t.top_bit in
+
     let top_bit = t.top_bit + increase_top_bit in
     let tree =
       if increase_top_bit = 1 then
@@ -69,5 +72,3 @@ struct
   let empty = { top_bit = 0; tree = Empty; last_key = -1 }
   let hash t = hash_of_t t.tree
 end
-
-
