@@ -4,7 +4,7 @@ end
 
 include Digestif.Make_BLAKE2B (Size_256)
 
-let pp = pp
+let pp fmt t = Format.fprintf fmt "0x%a" pp t
 let show = to_hex
 let compare a b = unsafe_compare a b
 let of_raw string = of_raw_string_opt string
