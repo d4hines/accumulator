@@ -160,6 +160,8 @@ end
 
 #import "metadata.mligo" "Metadata"
 
+#import "merkle_tree.mligo" "MT"
+
 module Storage = struct
    type token_id = nat
    type t = [@layout:comb] {
@@ -167,13 +169,19 @@ module Storage = struct
       operators : Operators.t;
       token_metadata : TokenMetadata.t;
       metadata  : Metadata.t;
+      commitment_manager : address;
+      commitments : MT.hash_set;
+      redemptions : MT.hash_set;
    }
 
-   let init () : t = {
+   let init commitment_manager : t = {
       ledger = Ledger.init ();
       operators = Operators.init ();
       token_metadata = TokenMetadata.init ();
       metadata = Metadata.init ();
+      commitment_manager;
+      commitments = Big_map.empty; 
+      redemptions = Big_map.empty;
    }
 
    let is_owner_of (s:t) (owner : address) (token_id : token_id) : bool =
@@ -281,9 +289,3 @@ let update_ops : update_operators -> storage -> operation list * storage =
    ([]: operation list),s
 *)
 
-
-type parameter = [@layout:comb] | Transfer of transfer | Balance_of of balance_of | Update_operators of update_operators
-let main ((p,s):(parameter * storage)) = match p with
-   Transfer         p -> transfer   p s
-|  Balance_of       p -> balance_of p s
-|  Update_operators p -> update_ops p s

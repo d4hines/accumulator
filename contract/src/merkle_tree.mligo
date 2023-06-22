@@ -39,3 +39,7 @@ let vault_check_handle_proof
        of the proof to know what is the MSB *)
     let most_significant_bit = int (List.length proof) - 1 in
     verify (most_significant_bit, proof, root)
+
+type 'a lazy_set = ('a, unit) big_map
+
+type hash_set = blake2b lazy_set
