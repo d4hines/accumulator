@@ -12,6 +12,8 @@ type t = string
 [@no_mutation] let send_hook_under = "FA2_SENDER_HOOK_UNDEFINED"
 [@no_mutation] let wrong_amount    = "WRONG_AMOUNT"
 [@no_mutation] let token_already_exists = "TOKEN_ALREADY_EXISTS"
-
+[@no_mutation] let not_admin = "NOT_ADMIN"
+[@no_mutation] let invalid_signature = "INVALID_SIGNATURE"
+[@no_mutation] let unrecognized_root = "UNRECOGNIZED_ROOT"
 
 [@no_mutation] let only_sender_manage_operators = "The sender can only manage operators for his own token"

@@ -11,7 +11,7 @@ let () =
        0xe15928114adba31d0483d88d83d42303f5d02e7637c892a5714fdbddbc234a1c)
        ] in
     let leaf = { metadata = "b"; id = 1n} in
-    let () = MT.vault_check_handle_proof proof root leaf in
+    let () = MT.assert_valid_witness proof root leaf in
     (* example 2 *)
     let root = 0x15ec4e09903d84ccb95473bc05f6c7f9434a307729828a62d478d1a6e2c031ed in 
     let proof =  [(0x3b5f99ddd4c3a480e725124ed04b2a54b1786bae96a6d2ac2b917c1005bd64bc,
@@ -22,4 +22,4 @@ let () =
         0x461cc538a6ae23529cb18843518a7171ff6cb5ea1bb7a074d3c4c0b5a9cfbf51)
        ] in
     let leaf = { metadata = "g"; id = 5n} in
-     MT.vault_check_handle_proof proof root leaf
+     MT.assert_valid_witness proof root leaf

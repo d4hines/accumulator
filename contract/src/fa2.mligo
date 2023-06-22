@@ -30,6 +30,7 @@
 *)
 
 #import "./errors.mligo" "Errors"
+#import "./merkle_tree.mligo" "MT"
 
 module Address = struct
    type t = address
@@ -114,7 +115,14 @@ module Ledger = struct
       let () = assert_owner_of ledger token_id from_ in
       let ledger = Big_map.update token_id (Some to_) ledger in
       ledger
+   
+   let mint (ledger : t) (token_id : token_id) (to_ : owner) =
+      (* Relies on the fact that TokenMetadata.mint is called
+         first and will fail if the token already exists *)
+      Big_map.add token_id to_ ledger
 end
+
+#import "./token_interface.mligo" "Token_interface"
 
 module TokenMetadata = struct
    (**
@@ -123,11 +131,14 @@ module TokenMetadata = struct
       or TZIP-16 : https://gitlab.com/tezos/tzip/-/blob/master/proposals/tzip-12/tzip-12.md#contract-metadata-tzip-016
    *)
    (* with TZIP-12 *)
-   type data = {token_id:nat;token_info:(string,bytes)map}
-   type t = (nat,data) big_map
+   type t = (nat, Token_interface.data) big_map
 
-   
-   let init () : t = Big_map.empty 
+   let mint (data : Token_interface.data) (ledger : t) =
+      if Big_map.mem data.token_id ledger then
+         failwith Errors.token_already_exists
+      else Big_map.add data.token_id data ledger
+
+   let init () : t = Big_map.empty
 
    let get_token_metadata (token_id : nat) (tm : t) =
       match Big_map.find_opt token_id tm with
@@ -145,6 +156,8 @@ module Storage = struct
       token_ids : token_id set;
       token_metadata : TokenMetadata.t;
       metadata : Metadata.t;
+      admin : address; (* FIXME: more flexible if we do a public key instead. Also be sure to allow key rotation. *)
+      commitments : MT.hash_set;
    }
 
    let is_owner_of (s:t) (owner : Address.t) (token_id : token_id) : bool =
@@ -163,6 +176,11 @@ module Storage = struct
    let get_balance (s : t) (owner : Address.t) (token_id : nat) : nat =
       let ()       = assert_token_exist s token_id in
       if is_owner_of s owner token_id then 1n else 0n
+
+   let mint (s : t) (data : Token_interface.data) (to_ : address) =
+      let token_metadata = TokenMetadata.mint data s.token_metadata in
+      let ledger = Ledger.mint s.ledger data.token_id to_ in
+      {s with token_metadata; ledger}
 
 end
 
@@ -255,17 +273,40 @@ let update_ops : update_operators -> storage -> operation list * storage =
    ([]: operation list),s
 *)
 
+let commit (root : MT.blake2b) (s : storage) : operation list * storage =
+   let sender = Tezos.get_sender () in
+   if sender <> s.admin then failwith Errors.not_admin
+   else 
+      let commitments = Big_map.add root () s.commitments in
+      [], {s with commitments}
+
+type materialize_params = {
+   leaf : MT.leaf;
+   root : MT.blake2b; 
+   proof : MT.merkle_proof ;
+}
+
+let materialize ({leaf; root; proof}: materialize_params) (s : storage) : operation list * storage = 
+   let () = MT.assert_valid_leaf leaf in
+   let () = assert_with_error (Big_map.mem root s.commitments) Errors.unrecognized_root in
+   let () = MT.assert_valid_witness  proof root leaf in
+   [], Storage.mint s leaf.data leaf.recipient
 
 type parameter =
 [@layout comb]
-| Transfer of transfer | Balance_of of balance_of
+| Transfer of transfer
+| Balance_of of balance_of
 | Update_operators of update_operators
+| Commit of MT.blake2b
+| Materialize of materialize_params
 
 let main (p : parameter) (s : storage) =
   match p with
     Transfer p -> transfer p s
   | Balance_of p -> balance_of p s
   | Update_operators p -> update_ops p s
+  | Commit p -> commit p s
+  | Materialize p -> materialize p s
 
 [@view]
 let get_balance : ((Address.t * nat) * storage) -> nat =
@@ -290,6 +331,6 @@ let is_operator : (operator * storage) -> bool =
     Operators.is_operator (s.operators, op.owner, op.operator, op.token_id)
 
 [@view]
-let token_metadata : (nat * storage) -> TokenMetadata.data =
+let token_metadata : (nat * storage) -> Token_interface.data =
   fun ((p, s) : (nat * storage)) ->
     TokenMetadata.get_token_metadata p s.token_metadata
