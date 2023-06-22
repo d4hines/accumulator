@@ -2,11 +2,10 @@
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
     nix-filter.url = "github:numtide/nix-filter";
-    nixpkgs.url = "github:nix-ocaml/nix-overlays";
-    nixpkgs.inputs.flake-utils.follows = "flake-utils";
-    nixpkgs.inputs.nix-filter.follows = "nix-filter";
+    nixpkgs.url = "github:nixos/nixpkgs";
     ligo-nix.url = "github:ulrikstrid/ligo-nix";
     ligo-nixpkgs.follows = "ligo-nix/nixpkgs";
+    tezos-nix.url = "github:marigold-dev/tezos-nix";
   };
 
   outputs = {
@@ -16,12 +15,13 @@
     nix-filter,
     ligo-nix,
     ligo-nixpkgs, 
+    tezos-nix,
   }: let
     out = system: let
       pkgs = import nixpkgs {
         inherit system;
         overlays = [
-          # overlays go here
+          tezos-nix.overlays.default
         ];
       };
       # Did this hack because Ligo wasn't building otherwise

@@ -48,6 +48,8 @@ with ocamlPackages; rec {
       lwt
       yojson
       ppx_deriving 
+      tezos-micheline
+      zarith
 
       ppx_expect
     ];
