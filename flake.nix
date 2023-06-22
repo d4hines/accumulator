@@ -51,6 +51,7 @@
           dune_3
           nixfmt
           pkgs'.ligo 
+          utop 
         ];
       };
 
