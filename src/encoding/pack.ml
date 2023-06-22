@@ -7,6 +7,7 @@ type t = (canonical_location, prim) node
 let int n = Int (-1, n)
 let nat n = Int (-1, n)
 let bytes b = Bytes (-1, b)
+let string s = String (-1, s)
 let pair l r = Prim (-1, D_Pair, [ l; r ], [])
 let list l = Seq (-1, l)
 
