@@ -1,6 +1,6 @@
 (library
  (name my_lib)
- (libraries digestif)
+ (libraries encoding digestif)
  (inline_tests)
  (preprocess
   (pps ppx_deriving.show ppx_deriving.ord ppx_deriving.eq ppx_expect)))

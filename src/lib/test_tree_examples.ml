@@ -29,12 +29,12 @@ let%expect_test "example trees" =
         left =
         Incremental_patricia.Make.Leaf {
           value = { Nft_entry.metadata = "a"; id = 0 };
-          hash = bfb566be3d85a72bc343229675f2aaaa9a780082c5ac22cb447ab5d6f973ea07};
-        hash = 0eb9992b0977f33390770c0fbae6d19d4f99ae9129c703c7ecb4305fa60e49dd;
+          hash = b68cf90741aad1a3a985b7c0b9f5c01183030ad0e63132f5edaa5f3e6b6e4e25};
+        hash = 71e055d664229ce45278c8e5d631a17e4c6d2557ec0bdc350649511842083842;
         right =
         Incremental_patricia.Make.Leaf {
           value = { Nft_entry.metadata = "b"; id = 1 };
-          hash = 61f7482ee57411bd6840a2ccc8b95b9a98c7d6a1403ce50cb07708f027ebbfc9}};
+          hash = e15928114adba31d0483d88d83d42303f5d02e7637c892a5714fdbddbc234a1c}};
       top_bit = 1; last_key = 1 }
     ----------------
     'a;b;c':
@@ -49,9 +49,9 @@ let%expect_test "example trees" =
                                                                       "a";
                                                                       id = 0 };
                                                                     hash =
-                                                                    bfb566be3d85a72bc343229675f2aaaa9a780082c5ac22cb447ab5d6f973ea07};
+                                                                    b68cf90741aad1a3a985b7c0b9f5c01183030ad0e63132f5edaa5f3e6b6e4e25};
                                                                   hash =
-                                                                  0eb9992b0977f33390770c0fbae6d19d4f99ae9129c703c7ecb4305fa60e49dd;
+                                                                  71e055d664229ce45278c8e5d631a17e4c6d2557ec0bdc350649511842083842;
                                                                   right =
                                                                   Incremental_patricia.Make.Leaf {
                                                                     value =
@@ -59,9 +59,9 @@ let%expect_test "example trees" =
                                                                       "b";
                                                                       id = 1 };
                                                                     hash =
-                                                                    61f7482ee57411bd6840a2ccc8b95b9a98c7d6a1403ce50cb07708f027ebbfc9}};
+                                                                    e15928114adba31d0483d88d83d42303f5d02e7637c892a5714fdbddbc234a1c}};
                                                                 hash =
-                                                                515516f0493235c0d96ae9a081b2ee97bd1198d7d652faedc0e4395bf0e17741;
+                                                                10115bc5aa9c245b60d3258dc316684f214162a92a5e977153f6188da832c237;
                                                                 right =
                                                                 Incremental_patricia.Make.Node {
                                                                   left =
@@ -71,9 +71,9 @@ let%expect_test "example trees" =
                                                                       "c";
                                                                       id = 2 };
                                                                     hash =
-                                                                    23649bfa37dd2c92460e38a1aaa977122e089f2cc260309ed5354f97385b560e};
+                                                                    5b0aa9b8fc01df22d700a9fea0f9c9a9400e8f9ecc43f16df536d645ab447ca3};
                                                                   hash =
-                                                                  b8bb0233aa4476456b25d0af8faf939c191dde5fe71e7d482b56f4072bb45c90;
+                                                                  1b531989a7183cda947794f91843fcaf2c1e237eb43ca9a31de9438b726239e1;
                                                                   right =
                                                                   Incremental_patricia.Make.Empty}};
                                                               top_bit = 2;
@@ -84,12 +84,12 @@ type proof = (BLAKE2b.t * BLAKE2b.t) list [@@deriving show]
 
 let%expect_test "proofs" =
   let tree = tree_of_list [ "a"; "b"; "c" ] in
-  let proof, _ = Nft_tree.find 2 tree |> Option.get in
+  let proof, _ = Nft_tree.find 1 tree |> Option.get in
   Format.printf "%a\n" pp_proof proof;
   [%expect
     {|
-     [(0eb9992b0977f33390770c0fbae6d19d4f99ae9129c703c7ecb4305fa60e49dd,
-       b8bb0233aa4476456b25d0af8faf939c191dde5fe71e7d482b56f4072bb45c90);
-       (23649bfa37dd2c92460e38a1aaa977122e089f2cc260309ed5354f97385b560e,
-        0e5751c026e543b2e8ab2eb06099daa1d1e5df47778f7787faab45cdf12fe3a8)
+     [(71e055d664229ce45278c8e5d631a17e4c6d2557ec0bdc350649511842083842,
+       1b531989a7183cda947794f91843fcaf2c1e237eb43ca9a31de9438b726239e1);
+       (b68cf90741aad1a3a985b7c0b9f5c01183030ad0e63132f5edaa5f3e6b6e4e25,
+        e15928114adba31d0483d88d83d42303f5d02e7637c892a5714fdbddbc234a1c)
        ] |}]
