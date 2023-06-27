@@ -13,10 +13,6 @@ type leaf = {
 
 type merkle_proof = (blake2b * blake2b) list
 
-let assert_msg ((message, condition): (string * bool)) =
-  if not condition then
-    failwith message
-
 let assert_valid_leaf ({data; author; recipient; signature} : leaf) =
   let bytes = Bytes.pack (data, recipient) in
   assert_with_error (Crypto.check author signature bytes) Errors.invalid_signature
