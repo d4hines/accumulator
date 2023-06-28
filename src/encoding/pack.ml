@@ -10,6 +10,8 @@ let bytes b = Bytes (-1, b)
 let string s = String (-1, s)
 let pair l r = Prim (-1, D_Pair, [ l; r ], [])
 let list l = Seq (-1, l)
+let elt k v = Prim (-1, D_Elt, [ k; v ], [])
+let triple a b c = Prim (-1, D_Pair, [ a; b; c ], [])
 
 let to_bytes data =
   Data_encoding.Binary.to_bytes_exn Michelson.expr_encoding

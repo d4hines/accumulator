@@ -1,20 +1,35 @@
 module Nft_tree = Incremental_patricia.Make (Nft_entry)
 
-let tree_of_list =
+let leaf_of_id id =
+  let open Nft_entry in
+  let data =
+    { token_id = id; token_info = [ ("hello", Bytes.of_string "world") ] }
+  in
+  {
+    data;
+    (* FIXME: How does this get indexed and displayed in wallets? *)
+    author = "edpkvYuMUqDdSJjfc5ukdrD42kUiJ4UJsb296TaT5iFzANhdFCdQaF";
+    recipient =
+      "tz1anBZ6qANs3bCn5By42NH475kPD7GhJBKQ" (* just a random address *);
+    signature =
+      "edsigtib3NBVvPPcmTiBWxr9q7xx7wYczbHDni7M6nYKs9VUq5zntmN4ebGVLCfGgida1f8nKL1rngU5CZG64fSSyEFL4m2LAs3"
+      (* this signature won't be valid but it's fine for testing *);
+  }
+
+let tree_of_size n =
   List.fold_left
-    (fun tree nft ->
-      let tree, _value = Nft_tree.add (fun id -> { metadata = nft; id }) tree in
+    (fun tree _ ->
+      let tree, _value = Nft_tree.add (fun id -> leaf_of_id id) tree in
       tree)
     Nft_tree.empty
+    (List.init n (fun _ -> ()))
 
 let%expect_test "example trees" =
   Format.printf "empty:\n%a\n" Nft_tree.pp Nft_tree.empty;
   Format.printf "empty hash: %a\n----------------\n" BLAKE2b.pp
     (BLAKE2b.hash "");
-  Format.printf "'a;b':\n%a\n----------------\n" Nft_tree.pp
-    (tree_of_list [ "a"; "b" ]);
-  Format.printf "'a;b;c':\n%a\n----------------\n" Nft_tree.pp
-    (tree_of_list [ "a"; "b"; "c" ]);
+  Format.printf "'a;b':\n%a\n----------------\n" Nft_tree.pp (tree_of_size 2);
+  Format.printf "'a;b;c':\n%a\n----------------\n" Nft_tree.pp (tree_of_size 3);
   [%expect
     {|
     empty:
@@ -28,15 +43,29 @@ let%expect_test "example trees" =
       Incremental_patricia.Make.Node {
         left =
         Incremental_patricia.Make.Leaf {
-          value = { Nft_entry.metadata = "a"; id = 0 };
+          value =
+          { Nft_entry.data =
+            { Nft_entry.token_id = 0; token_info = [("hello", "world")] };
+            author = "edpkvYuMUqDdSJjfc5ukdrD42kUiJ4UJsb296TaT5iFzANhdFCdQaF";
+            recipient = "tz1anBZ6qANs3bCn5By42NH475kPD7GhJBKQ";
+            signature =
+            "edsigtib3NBVvPPcmTiBWxr9q7xx7wYczbHDni7M6nYKs9VUq5zntmN4ebGVLCfGgida1f8nKL1rngU5CZG64fSSyEFL4m2LAs3"
+            };
           hash =
-          0xb68cf90741aad1a3a985b7c0b9f5c01183030ad0e63132f5edaa5f3e6b6e4e25};
-        hash = 0x71e055d664229ce45278c8e5d631a17e4c6d2557ec0bdc350649511842083842;
+          0xeb91288e0dbeb6b131ef287beab86a364f180356090dfdc3379b9352c0501513};
+        hash = 0x9bca18b7190c6f911a237979192307295cea2732bba7484181e5ab2ba3e1feac;
         right =
         Incremental_patricia.Make.Leaf {
-          value = { Nft_entry.metadata = "b"; id = 1 };
+          value =
+          { Nft_entry.data =
+            { Nft_entry.token_id = 1; token_info = [("hello", "world")] };
+            author = "edpkvYuMUqDdSJjfc5ukdrD42kUiJ4UJsb296TaT5iFzANhdFCdQaF";
+            recipient = "tz1anBZ6qANs3bCn5By42NH475kPD7GhJBKQ";
+            signature =
+            "edsigtib3NBVvPPcmTiBWxr9q7xx7wYczbHDni7M6nYKs9VUq5zntmN4ebGVLCfGgida1f8nKL1rngU5CZG64fSSyEFL4m2LAs3"
+            };
           hash =
-          0xe15928114adba31d0483d88d83d42303f5d02e7637c892a5714fdbddbc234a1c}};
+          0x33259f5230a3f895b10c8d391e8ba4d30b2b175383ad64b3f695ecc69685bca6}};
       top_bit = 1; last_key = 1 }
     ----------------
     'a;b;c':
@@ -47,35 +76,68 @@ let%expect_test "example trees" =
                                                                   left =
                                                                   Incremental_patricia.Make.Leaf {
                                                                     value =
-                                                                    { Nft_entry.metadata =
-                                                                      "a";
-                                                                      id = 0 };
+                                                                    { Nft_entry.data =
+                                                                      { Nft_entry.token_id =
+                                                                        0;
+                                                                        token_info =
+                                                                        [("hello",
+                                                                        "world")]
+                                                                        };
+                                                                      author =
+                                                                      "edpkvYuMUqDdSJjfc5ukdrD42kUiJ4UJsb296TaT5iFzANhdFCdQaF";
+                                                                      recipient =
+                                                                      "tz1anBZ6qANs3bCn5By42NH475kPD7GhJBKQ";
+                                                                      signature =
+                                                                      "edsigtib3NBVvPPcmTiBWxr9q7xx7wYczbHDni7M6nYKs9VUq5zntmN4ebGVLCfGgida1f8nKL1rngU5CZG64fSSyEFL4m2LAs3"
+                                                                      };
                                                                     hash =
-                                                                    0xb68cf90741aad1a3a985b7c0b9f5c01183030ad0e63132f5edaa5f3e6b6e4e25};
+                                                                    0xeb91288e0dbeb6b131ef287beab86a364f180356090dfdc3379b9352c0501513};
                                                                   hash =
-                                                                  0x71e055d664229ce45278c8e5d631a17e4c6d2557ec0bdc350649511842083842;
+                                                                  0x9bca18b7190c6f911a237979192307295cea2732bba7484181e5ab2ba3e1feac;
                                                                   right =
                                                                   Incremental_patricia.Make.Leaf {
                                                                     value =
-                                                                    { Nft_entry.metadata =
-                                                                      "b";
-                                                                      id = 1 };
+                                                                    { Nft_entry.data =
+                                                                      { Nft_entry.token_id =
+                                                                        1;
+                                                                        token_info =
+                                                                        [("hello",
+                                                                        "world")]
+                                                                        };
+                                                                      author =
+                                                                      "edpkvYuMUqDdSJjfc5ukdrD42kUiJ4UJsb296TaT5iFzANhdFCdQaF";
+                                                                      recipient =
+                                                                      "tz1anBZ6qANs3bCn5By42NH475kPD7GhJBKQ";
+                                                                      signature =
+                                                                      "edsigtib3NBVvPPcmTiBWxr9q7xx7wYczbHDni7M6nYKs9VUq5zntmN4ebGVLCfGgida1f8nKL1rngU5CZG64fSSyEFL4m2LAs3"
+                                                                      };
                                                                     hash =
-                                                                    0xe15928114adba31d0483d88d83d42303f5d02e7637c892a5714fdbddbc234a1c}};
+                                                                    0x33259f5230a3f895b10c8d391e8ba4d30b2b175383ad64b3f695ecc69685bca6}};
                                                                 hash =
-                                                                0x10115bc5aa9c245b60d3258dc316684f214162a92a5e977153f6188da832c237;
+                                                                0x0232c5455175cc58a166c713e2192152b7b6b024c50cf1c433eb1a51cb7daa53;
                                                                 right =
                                                                 Incremental_patricia.Make.Node {
                                                                   left =
                                                                   Incremental_patricia.Make.Leaf {
                                                                     value =
-                                                                    { Nft_entry.metadata =
-                                                                      "c";
-                                                                      id = 2 };
+                                                                    { Nft_entry.data =
+                                                                      { Nft_entry.token_id =
+                                                                        2;
+                                                                        token_info =
+                                                                        [("hello",
+                                                                        "world")]
+                                                                        };
+                                                                      author =
+                                                                      "edpkvYuMUqDdSJjfc5ukdrD42kUiJ4UJsb296TaT5iFzANhdFCdQaF";
+                                                                      recipient =
+                                                                      "tz1anBZ6qANs3bCn5By42NH475kPD7GhJBKQ";
+                                                                      signature =
+                                                                      "edsigtib3NBVvPPcmTiBWxr9q7xx7wYczbHDni7M6nYKs9VUq5zntmN4ebGVLCfGgida1f8nKL1rngU5CZG64fSSyEFL4m2LAs3"
+                                                                      };
                                                                     hash =
-                                                                    0x5b0aa9b8fc01df22d700a9fea0f9c9a9400e8f9ecc43f16df536d645ab447ca3};
+                                                                    0x305e3adb1e237df53ff29e9a4f91d6451e8d69750d166c4baf796db0990ba91c};
                                                                   hash =
-                                                                  0x1b531989a7183cda947794f91843fcaf2c1e237eb43ca9a31de9438b726239e1;
+                                                                  0x0dea7909619090ae016cc190479668afdb466f50937dee8e637c6e1566127a40;
                                                                   right =
                                                                   Incremental_patricia.Make.Empty}};
                                                               top_bit = 2;
@@ -85,29 +147,29 @@ let%expect_test "example trees" =
 type proof = (BLAKE2b.t * BLAKE2b.t) list [@@deriving show]
 
 let%expect_test "proofs" =
-  let tree = tree_of_list [ "a"; "b"; "c" ] in
+  let tree = tree_of_size 3 in
   let proof, _ = Nft_tree.find 1 tree |> Option.get in
   Format.printf "root: %a; proof: %a\n-----------\n" BLAKE2b.pp
     (Nft_tree.hash tree) pp_proof proof;
-  let tree = tree_of_list [ "a"; "b"; "c"; "e"; "f"; "g" ] in
+  let tree = tree_of_size 6 in
   let proof, _ = Nft_tree.find 5 tree |> Option.get in
   Format.printf "root: %a; proof: %a\n-----------\n" BLAKE2b.pp
     (Nft_tree.hash tree) pp_proof proof;
   [%expect
     {|
-     root: 0x10115bc5aa9c245b60d3258dc316684f214162a92a5e977153f6188da832c237; proof:
-     [(0x71e055d664229ce45278c8e5d631a17e4c6d2557ec0bdc350649511842083842,
-       0x1b531989a7183cda947794f91843fcaf2c1e237eb43ca9a31de9438b726239e1);
-       (0xb68cf90741aad1a3a985b7c0b9f5c01183030ad0e63132f5edaa5f3e6b6e4e25,
-        0xe15928114adba31d0483d88d83d42303f5d02e7637c892a5714fdbddbc234a1c)
+     root: 0x0232c5455175cc58a166c713e2192152b7b6b024c50cf1c433eb1a51cb7daa53; proof:
+     [(0x9bca18b7190c6f911a237979192307295cea2732bba7484181e5ab2ba3e1feac,
+       0x0dea7909619090ae016cc190479668afdb466f50937dee8e637c6e1566127a40);
+       (0xeb91288e0dbeb6b131ef287beab86a364f180356090dfdc3379b9352c0501513,
+        0x33259f5230a3f895b10c8d391e8ba4d30b2b175383ad64b3f695ecc69685bca6)
        ]
      -----------
-     root: 0x15ec4e09903d84ccb95473bc05f6c7f9434a307729828a62d478d1a6e2c031ed; proof:
-     [(0x3b5f99ddd4c3a480e725124ed04b2a54b1786bae96a6d2ac2b917c1005bd64bc,
-       0x76beaf7dc7668360acc4fa6d9e47c3b3b7eea1f3156204de0406c432e2f58ee5);
-       (0xf8e99d14fd83d18d881028196a28fbe8b742e20c11d9c5ce73bb53cd46080cd8,
+     root: 0x95b83aff9a4ccd866cc1a1d16153757e2f2d7e36fbb5cf6bbf8c78f2da2788ce; proof:
+     [(0xb1ca5db917f20a2a85b7a8c52a9035611b0becfd0d104ea12d6ef2d81eb23d75,
+       0x1bb087798f39d75e367be184e293cfe0a1e7db36d8a66a22a5b03272057da5e5);
+       (0x6007dd1f6ad831203dcc21c7d48721b2706ebc3f7986747d825f7306dad90a3e,
         0x8438b0d941bcc7a33e296f07393103e83e31c603897de881e869a3e60c516412);
-       (0x3c97552cc1c4c2845429858290a5b6e22577e8f07d5e6a5543ab09a67023f719,
-        0x461cc538a6ae23529cb18843518a7171ff6cb5ea1bb7a074d3c4c0b5a9cfbf51)
+       (0x616323927acb8c1a375834a2fa4ddfeb761d0337251044ba8651c6819bd2b8bb,
+        0x3555f70f10e1858b1ed7e131d8de0b6bcb3b8998cfc4ec56eb32f565390ec3f8)
        ]
      ----------- |}]
